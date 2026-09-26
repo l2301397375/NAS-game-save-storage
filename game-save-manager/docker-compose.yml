@@ -1,0 +1,16 @@
+version: '3.8'
+services:
+  game-save-manager:
+    build: .
+    container_name: game-save-manager
+    ports:
+      - "8100:5000"
+    environment:
+      - IGDB_CLIENT_ID=5dwp0urc7md3sfch8jcwtgoozq1u0v
+      - IGDB_CLIENT_SECRET=bhpmlh9gf18yp9bsqbu2pep7jrr26z
+      - IGDB_PROXY=https://chuangshi.eu.cc
+    volumes:
+      - ./data:/app/data
+      - ./templates:/app/templates
+      - ./static:/app/static
+    restart: unless-stopped

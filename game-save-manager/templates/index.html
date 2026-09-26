@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GAME NEXUS - 游戏存档管理</title>
+<link rel="icon" type="image/png" href="/static/logo.png">
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<div class="bg-g"></div>
+<div class="bg-glow g1"></div>
+<div class="bg-glow g2"></div>
+
+<div class="app">
+  <aside class="sb">
+    <div class="logo">
+      <div class="logo-t">GAME NEXUS</div>
+      <span class="logo-s">SAVE SYSTEM</span>
+    </div>
+    <nav class="nav">
+  <button class="ni on" data-v="dashboard" onclick="sv('dashboard',this)"><span class="ind"></span>&#9672; <span class="nl">仪表盘</span></button>
+  <button class="ni" data-v="categories" onclick="sv('categories',this)"><span class="ind"></span>&#11042; <span class="nl">分类</span></button>
+  <button class="ni" data-v="games" onclick="sv('games',this)"><span class="ind"></span>&#9673; <span class="nl">游戏</span></button>
+  <!-- ★ 侧边栏分类列表 -->
+  <div class="nav-cat-group" id="navCats"></div>
+</nav>
+    <div class="sf"><span class="dot"></span>SYSTEM ONLINE</div>
+  </aside>
+
+  <main class="mn">
+    <header class="tb">
+      <div class="sw">
+        <span style="color:var(--ac)">&#8981;</span>
+        <input id="si" placeholder="搜索存档..." oninput="doS(this.value)">
+      </div>
+      <button class="bt bp" onclick="openUp()">&#11014; 上传存档</button>
+    </header>
+
+    <section id="v-dashboard" class="vw on">
+      <div class="sh"><h2>&#9672; 系统概览</h2><span class="sl"></span></div>
+      <div class="stats" id="sg2"></div>
+      <div class="sh" style="margin-top:30px"><h3>&#9201; 最近存档</h3><span class="sl"></span></div>
+      <div class="gr" id="rs"></div>
+    </section>
+
+    <section id="v-categories" class="vw">
+      <div class="sh"><h2>&#11042; 分类管理</h2><span class="sl"></span>
+        <button class="bt bp bs" onclick="oCM()">+ 新建</button></div>
+      <div class="gr" id="cl"></div>
+    </section>
+
+    <section id="v-games" class="vw">
+      <div class="sh"><h2>&#9673; 游戏库</h2><span class="sl"></span>
+        <button class="bt bp bs" onclick="oGM()">+ 添加</button></div>
+      <div class="gr" id="gl"></div>
+    </section>
+
+    <section id="v-gamesaves" class="vw">
+      <button class="btn-back" onclick="backToGames()">&#8592; 返回游戏库</button>
+      <div class="sh">
+        <h2 id="gsTitle">&#11074; 存档</h2>
+        <span class="sl"></span>
+        <button class="bt bp bs" onclick="openUp()">&#11014; 上传</button>
+      </div>
+      <div class="gr" id="gsl"></div>
+    </section>
+
+        <section id="v-search" class="vw">
+      <div class="sh"><h2>&#8981; 搜索结果</h2><span class="sl"></span></div>
+      <div class="gr" id="sr2"></div>
+    </section>
+
+    <!-- ★ 某分类下的游戏 -->
+    <section id="v-catgames" class="vw">
+      <button class="btn-back" onclick="backToCats()">&#8592; 返回分类</button>
+      <div class="sh">
+        <h2 id="cgTitle">&#11042; 分类</h2>
+        <span class="sl"></span>
+        <button class="bt bp bs" onclick="oGM()">+ 添加游戏</button>
+      </div>
+      <div class="gr" id="cgl"></div>
+    </section>
+  </main>
+</div>
+
+<!-- 上传弹窗 -->
+<div id="uploadModal" class="mo hid">
+  <div class="mb">
+    <div class="mh"><h3>&#11014; 上传存档</h3><button class="mc" onclick="cm('uploadModal')">&#10005;</button></div>
+    <div class="mbd">
+      <div class="fd"><label>选择游戏</label><select id="ug" class="ip"></select></div>
+      <div class="fd"><label>存档槽位名</label>
+        <input id="us" class="ip" placeholder="如: 存档1 / 通关前 / BOSS前">
+        <small>&#9888; 同名槽位将覆盖旧存档</small></div>
+      <div class="fd"><label>选择文件</label>
+        <div class="dz" onclick="document.getElementById('fi2').click()">
+          <input type="file" id="fi2" hidden>
+          <div class="dz-i">&#11014;</div><p>点击选择文件</p>
+        </div>
+        <div id="finf"></div>
+      </div>
+      <div class="fd"><label>备注</label><input id="un" class="ip" placeholder="可选"></div>
+            <!-- ★ 上传进度条 -->
+      <div id="upProgress" class="hid" style="margin-top:14px">
+        <div style="height:8px;background:rgba(0,20,50,.5);border-radius:4px;overflow:hidden">
+          <div id="upProgressBar" style="height:100%;width:0%;background:linear-gradient(90deg,#00b4ff,#0070ff);transition:width .2s"></div>
+        </div>
+        <div id="upProgressText" style="font-size:11px;color:var(--dm);margin-top:6px;text-align:center">准备上传...</div>
+      </div>
+      <button class="bt bp bf" id="upBtn" onclick="doUp()">&#128190; 保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- 编辑游戏弹窗 -->
+<div id="editModal" class="mo hid">
+  <div class="mb">
+    <div class="mh"><h3>&#9998; 编辑游戏</h3><button class="mc" onclick="cm('editModal')">&#10005;</button></div>
+    <div class="mbd">
+      <div class="fd"><label>游戏名</label>
+        <input id="eg-name" class="ip"></div>
+      <div class="fd"><label>分类</label>
+        <select id="eg-cat" class="ip"></select></div>
+      <div class="fd"><label>图标</label>
+        <input id="eg-icon" class="ip" maxlength="4"></div>
+      <div class="fd"><label>封面URL</label>
+        <input id="eg-cover" class="ip" placeholder="留空则显示图标">
+        <div id="eg-preview" class="hid" style="margin-top:8px">
+          <img id="eg-preview-img" style="width:100%;max-height:120px;object-fit:contain;border-radius:8px;border:1px solid var(--bdh);background:#050a15">
+        </div>
+      </div>
+      <button class="bt bp bf" onclick="doEditGame()">&#10003; 保存修改</button>
+    </div>
+  </div>
+</div>
+
+<!-- 分类弹窗 -->
+<div id="catModal" class="mo hid">
+  <div class="mb">
+    <div class="mh"><h3>&#11042; 新建分类</h3><button class="mc" onclick="cm('catModal')">&#10005;</button></div>
+    <div class="mbd">
+      <div class="fd"><label>名称</label><input id="cn" class="ip" placeholder="如: RPG / FPS / 模拟器"></div>
+      <div class="fd"><label>图标</label><input id="ci2" class="ip" value="&#127918;" maxlength="4"></div>
+      <div class="fd"><label>颜色</label>
+        <input id="cc" type="color" value="#00b4ff"
+          style="width:60px;height:38px;border:1px solid var(--bd);border-radius:6px;cursor:pointer;background:0;padding:2px"></div>
+      <button class="bt bp bf" onclick="doCC()">&#10003; 创建</button>
+    </div>
+  </div>
+</div>
+
+<!-- 游戏弹窗 -->
+<div id="gameModal" class="mo hid">
+  <div class="mb wide">
+    <div class="mh"><h3>&#9673; 添加游戏</h3><button class="mc" onclick="cm('gameModal')">&#10005;</button></div>
+    <div class="mbd">
+      <div class="fd"><label>游戏名</label>
+        <div class="sr">
+          <input id="gn" class="ip" placeholder="输入游戏名，自动搜索封面" oninput="autoScrape(this.value)">
+          <button class="bt bp" onclick="manualScrape()">&#8981; 搜索</button>
+        </div>
+      </div>
+      <div id="scL" class="hid lt">&#10227; 正在搜索封面...</div>
+      <div id="scR" class="sg"></div>
+      <div id="scPreview" class="hid" style="margin-bottom:12px">
+        <label style="font-size:12px;color:var(--dm);letter-spacing:1px;display:block;margin-bottom:6px">已选封面预览</label>
+        <img id="scPrevImg" style="width:100%;max-height:120px;object-fit:cover;border-radius:8px;border:1px solid var(--bdh)">
+      </div>
+      <div class="fd"><label>分类</label>
+        <select id="gc" class="ip"><option value="">未分类</option></select></div>
+      <div class="fd"><label>图标</label><input id="gi" class="ip" value="&#127918;" maxlength="4"></div>
+      <div class="fd">
+          <label>封面URL</label>
+          <input id="gv" class="ip" placeholder="选择搜索结果自动填入，或手动粘贴图片URL">
+          <small>&#9888; 支持任意图片 URL（Steam / 网络图片 / 本地图床）</small>
+      </div>
+      <button class="bt bp bf" onclick="doCG()">&#10003; 添加游戏</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="tt hid"></div>
+
+<script src="/static/app.js"></script>
+</body>
+</html>
